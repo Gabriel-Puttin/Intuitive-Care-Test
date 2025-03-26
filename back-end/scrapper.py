@@ -1,6 +1,7 @@
 import requests
 import time
 import os
+import zipfile
 from bs4 import BeautifulSoup
 
 base_url = (
@@ -44,4 +45,12 @@ def downlaod_pdfs():
     return downloaded_files
 
 
-downlaod_pdfs()
+def converter_pdf_to_zip():
+    with zipfile.ZipFile("Anexos.zip", "w") as zipf:
+        for pdf in downlaod_pdfs():
+            if os.path.exists(pdf):
+                zipf.write(pdf, os.path.basename(pdf))
+    print("Arquivo zip criado")
+
+
+converter_pdf_to_zip()
