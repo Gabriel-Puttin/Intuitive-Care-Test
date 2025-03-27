@@ -54,3 +54,10 @@ def converter_pdf_to_zip():
 
 
 converter_pdf_to_zip()
+
+
+def converter_csv_to_zip(file, name):
+    with zipfile.ZipFile(name, "a") as zipf:
+        if os.path.exists(file):
+            zipf.write(file, os.path.basename(file))
+    print("Arquivo CSV adicionado ao zip")
