@@ -21,39 +21,39 @@ def fecth(url):
     return response.text
 
 
-def scrap_pdfs_link():
-    response = fecth(base_url)
+def scrap_hrefs_link(url, keyword, extension):
+    response = fecth(url)
     soup = BeautifulSoup(response, "html.parser")
-    pdfs_link = [a['href'] for a in soup.find_all('a', href=True) if "Anexo"
-                 in a['href'] and a['href'].endswith(".pdf")]
-    return pdfs_link
+    return [a['href'] for a in soup.find_all('a', href=True) if keyword
+            in a['href'] and a['href'].endswith(extension)]
 
 
-def downlaod_pdfs():
+def download_files(files, path="./"):
+    if not os.path.exists(path):
+        os.makedirs(path)
     downloaded_files = []
-    for link in scrap_pdfs_link():
+    for link in files:
         if not link.startswith('http'):
             link = requests.compat.urljoin(base_url, link)
-        pdf_name = os.path.basename(link)
-        pdf_path = os.path.join("./", pdf_name)
-
-        with open(pdf_path, 'wb') as f:
+        file_name = os.path.basename(link)
+        file_path = os.path.join(path, file_name)
+        if os.path.exists(file_path):
+            print(f"Arquivo já existe: {file_path}")
+            continue
+        with open(file_path, 'wb') as f:
             f.write(requests.get(link).content)
-        downloaded_files.append(pdf_path)
-        print(f"Baixado: {pdf_path}")
+        downloaded_files.append(file_path)
+        print(f"Baixado: {file_path}")
 
     return downloaded_files
 
 
 def converter_pdf_to_zip():
     with zipfile.ZipFile("Anexos.zip", "w") as zipf:
-        for pdf in downlaod_pdfs():
+        for pdf in download_files(scrap_hrefs_link(base_url, "Anexo", ".pdf")):
             if os.path.exists(pdf):
                 zipf.write(pdf, os.path.basename(pdf))
     print("Arquivo zip criado")
-
-
-converter_pdf_to_zip()
 
 
 def converter_csv_to_zip(file, name):
